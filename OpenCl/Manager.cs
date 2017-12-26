@@ -14,7 +14,7 @@
 
             var gpuDevice = platform.GetDevices(DeviceType.Gpu);
 
-            int globalWorkSize = 1024;
+            int globalWorkSize = 10240;
             int localWorkSize = 1024;
             float[] srcA = new float[globalWorkSize];
 
@@ -22,9 +22,9 @@
             {
                 using (CommandQueue commandQueue = context.CreateCommandQueue(gpuDevice[0], CommandQueueProperties.None))
                 {
-                    using (Buffer bufferA = context.CreateBuffer(MemoryFlags.ReadWrite, 1024 * sizeof(float)))
+                    using (Buffer bufferA = context.CreateBuffer(MemoryFlags.ReadWrite, srcA.Length * sizeof(float)))
                     {
-                        string source = @"__kernel void VectorAdd(__global float* a){ a[0] = 1; }";
+                        string source = @"__kernel void VectorAdd(__global float* a){ int iGID = get_global_id(0); a[iGID] = iGID; }";
                         using (NOpenCL.Program program = context.CreateProgramWithSource(source))
                         {
                             string options;
