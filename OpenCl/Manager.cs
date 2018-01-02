@@ -4,6 +4,8 @@
 
     using NOpenCL;
 
+    using OpenCl.NOPenCL.Execution;
+
     using Buffer = NOpenCL.Buffer;
 
     public class Manager
@@ -25,14 +27,12 @@
                     using (Buffer bufferA = context.CreateBuffer(MemoryFlags.ReadWrite, srcA.Length * sizeof(float)))
                     {
                         string source = @"__kernel void VectorAdd(__global float* a){ int iGID = get_global_id(0); a[iGID] = iGID; }";
-                        using (NOpenCL.Program program = context.CreateProgramWithSource(source))
+                        var openClProgram = new OpenClProgram(context);
+
+                        string options = "-cl-fast-relaxed-math";
+
+                        using (var program = openClProgram.Load(source, options))
                         {
-                            string options;
-#if false
-                            options = "-cl-fast-relaxed-math -DMAC";
-#else
-                            options = "-cl-fast-relaxed-math";
-#endif
                             program.Build(options);
 
                             using (Kernel kernel = program.CreateKernel("VectorAdd"))

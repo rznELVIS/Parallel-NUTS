@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
 VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenCl.NOPenCL", "OpenCl\OpenCl.NOPenCL.csproj", "{1D64B08F-C50D-4055-B3C9-F27AD1CFD164}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenCl.NOpenCL", "OpenCl\OpenCl.NOpenCL.csproj", "{1D64B08F-C50D-4055-B3C9-F27AD1CFD164}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OneCPU", "OneCPU\OneCPU.csproj", "{2E2D915D-66B6-4869-B10D-53DA4D8EAF74}"
 EndProject
