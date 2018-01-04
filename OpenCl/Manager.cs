@@ -1,6 +1,7 @@
 ﻿namespace OpenCl.NOPenCL
 {
     using System;
+    using System.Diagnostics;
 
     using NOpenCL;
 
@@ -12,6 +13,9 @@
     {
         public unsafe void Execute()
         {
+            var sw = new Stopwatch();
+            sw.Start();
+
             Platform platform = Platform.GetPlatforms()[0];
 
             var gpuDevice = platform.GetDevices(DeviceType.Gpu);
@@ -22,12 +26,19 @@
             int globalWorkSize = localWorkSize * 10000;
             
             float[] srcA = new float[globalWorkSize];
+            float[] coeff = new float[4];
+
+            coeff[0] = 11;
+            coeff[1] = 3;
+            coeff[2] = 2;
+            coeff[3] = 2;
 
             using (var context = Context.Create(gpuDevice[0]))
             {
                 using (CommandQueue commandQueue = context.CreateCommandQueue(gpuDevice[0], CommandQueueProperties.None))
                 {
                     using (Buffer bufferA = context.CreateBuffer(MemoryFlags.ReadWrite, srcA.Length * sizeof(float)))
+                    using (Buffer bufferCoeff = context.CreateBuffer(MemoryFlags.ReadOnly, coeff.Length * sizeof(float)))
                     {
                         string path = @"d:\Study\NUTS\GPU\Parallel-NUTS\OpenCl\kernels\example.cl";
                         var openClProgram = new OpenClProgram(context);
@@ -36,26 +47,41 @@
 
                         using (var program = openClProgram.LoadFromFile(path, options))
                         {
-                            using (Kernel kernel = program.CreateKernel("VectorAdd"))
+                            using (Kernel kernel = program.CreateKernel("Calculate"))
                             {
-                                kernel.Arguments[0].SetValue(bufferA);
-                                kernel.Arguments[1].SetValue(2);
+                                sw.Stop();
+                                Console.WriteLine($"Infrastructure time: {sw.Elapsed.TotalSeconds} sec.");
 
-                                fixed (float* psrcA = srcA)
+                                sw.Restart();
+                                for (int i = 0; i < 100; i++)
                                 {
-                                    using (commandQueue.EnqueueWriteBuffer(bufferA, false, 0, sizeof(float) * globalWorkSize, (IntPtr)psrcA))
-                                    {
-                                    }
+                                    kernel.Arguments[0].SetValue(bufferA);
+                                    kernel.Arguments[1].SetValue(bufferCoeff);
 
-                                    using (commandQueue.EnqueueNDRangeKernel(kernel, (IntPtr)globalWorkSize, (IntPtr)localWorkSize))
+                                    fixed (float* psrcA = srcA)
+                                    fixed (float* psrcCoeff = coeff)
                                     {
-                                    }
+                                        using (commandQueue.EnqueueWriteBuffer(bufferA, false, 0, sizeof(float) * globalWorkSize, (IntPtr)psrcA))
+                                        {
+                                        }
 
-                                    // synchronous/blocking read of results, and check accumulated errors
-                                    using (commandQueue.EnqueueReadBuffer(bufferA, true, 0, sizeof(float) * globalWorkSize, (IntPtr)psrcA))
-                                    {
+                                        using (commandQueue.EnqueueWriteBuffer(bufferCoeff, false, 0, sizeof(float) * coeff.Length, (IntPtr)psrcCoeff))
+                                        {
+                                        }
+
+                                        using (commandQueue.EnqueueNDRangeKernel(kernel, (IntPtr)globalWorkSize, (IntPtr)localWorkSize))
+                                        {
+                                        }
+
+                                        // synchronous/blocking read of results, and check accumulated errors
+                                        using (commandQueue.EnqueueReadBuffer(bufferA, true, 0, sizeof(float) * globalWorkSize, (IntPtr)psrcA))
+                                        {
+                                        }
                                     }
                                 }
+
+                                sw.Stop();
+                                Console.WriteLine($"Compute time: {sw.Elapsed.TotalSeconds} sec.");
                             }
                         }
                     }

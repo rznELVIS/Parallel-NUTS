@@ -7,22 +7,22 @@
         /// <summary>
         /// Амлитуда.
         /// </summary>
-        private double _a;
+        private float _a;
 
         /// <summary>
         /// Масса.
         /// </summary>
-        private double _m;
+        private float _m;
 
         /// <summary>
         /// Время одного колебания.
         /// </summary>
-        private double _period;
+        private float _period;
 
         /// <summary>
         /// Сдвиг по фазе.
         /// </summary>
-        private double _phi;
+        private float _phi;
 
         public void Exceute()
         {
@@ -32,9 +32,9 @@
             this._phi = 2;
 
             // 128000000 max for double
-            int globalWorkSize = 12800000;
-            double[] resultK = new double [globalWorkSize];
-            double[] resultP = new double[globalWorkSize];
+            int globalWorkSize = 128000000;
+            //float[] resultK = new float[globalWorkSize];
+            //float[] resultP = new float[globalWorkSize];
 
             for (var i = 0; i < globalWorkSize; i++)
             {
@@ -48,13 +48,13 @@
         /// </summary>
         /// <param name="t"></param>
         /// <returns></returns>
-        private double GetKinectickValue(double t)
+        private float GetKinectickValue(double t)
         {
             var res = 2 * Math.PI * Math.PI;
             res = res * this._a * this._a;
             res = res / (this._period * this._period);
 
-            res *= res * this._m;
+            res = res * this._m;
 
             var value = 2 * Math.PI / this._period;
             value = value * t;
@@ -62,7 +62,7 @@
 
             res = res * Math.Cos(value) * Math.Cos(value);
 
-            return res;
+            return (float)res;
         }
 
         private double GetPotentialValue(double t)
@@ -71,7 +71,7 @@
             res = res * this._a * this._a;
             res = res / (this._period * this._period);
 
-            res *= res * this._m;
+            res = res * this._m;
 
             var value = 2 * Math.PI / this._period;
             value = value * t;
@@ -79,7 +79,7 @@
 
             res = res * Math.Sin(value) * Math.Sin(value);
 
-            return res;
+            return (float)res;
         }
     }
 }
