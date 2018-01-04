@@ -16,8 +16,11 @@
 
             var gpuDevice = platform.GetDevices(DeviceType.Gpu);
 
-            int globalWorkSize = 10240;
+            this.DisplayDeviceInfo(gpuDevice);
+
             int localWorkSize = 1024;
+            int globalWorkSize = localWorkSize * 10000;
+            
             float[] srcA = new float[globalWorkSize];
 
             using (var context = Context.Create(gpuDevice[0]))
@@ -26,22 +29,21 @@
                 {
                     using (Buffer bufferA = context.CreateBuffer(MemoryFlags.ReadWrite, srcA.Length * sizeof(float)))
                     {
-                        string source = @"__kernel void VectorAdd(__global float* a){ int iGID = get_global_id(0); a[iGID] = iGID; }";
+                        string path = @"d:\Study\NUTS\GPU\Parallel-NUTS\OpenCl\kernels\example.cl";
                         var openClProgram = new OpenClProgram(context);
 
                         string options = "-cl-fast-relaxed-math";
 
-                        using (var program = openClProgram.Load(source, options))
+                        using (var program = openClProgram.LoadFromFile(path, options))
                         {
-                            program.Build(options);
-
                             using (Kernel kernel = program.CreateKernel("VectorAdd"))
                             {
                                 kernel.Arguments[0].SetValue(bufferA);
+                                kernel.Arguments[1].SetValue(2);
 
                                 fixed (float* psrcA = srcA)
                                 {
-                                    using (commandQueue.EnqueueWriteBuffer(bufferA, false, 0, sizeof(float) * 1024, (IntPtr)psrcA))
+                                    using (commandQueue.EnqueueWriteBuffer(bufferA, false, 0, sizeof(float) * globalWorkSize, (IntPtr)psrcA))
                                     {
                                     }
 
@@ -58,6 +60,25 @@
                         }
                     }
                 }
+            }
+        }
+
+        private void DisplayDeviceInfo(Device[] devices)
+        {
+            foreach (var device in devices)
+            {
+                Console.WriteLine($"Name: {device.Name}");
+                Console.WriteLine($"Max work group size: {device.MaxWorkGroupSize}");
+                Console.WriteLine($"OpenCL version: {device.OpenCLVersion}");
+                Console.WriteLine($"Version: {device.Version}");
+
+                Console.WriteLine("Extensions:");
+                foreach (var extension in device.Extensions)
+                {
+                    Console.WriteLine(extension);
+                }
+
+                Console.WriteLine("-------");
             }
         }
     }

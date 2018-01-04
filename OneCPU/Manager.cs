@@ -19,6 +19,9 @@
         /// </summary>
         private double _period;
 
+        /// <summary>
+        /// Сдвиг по фазе.
+        /// </summary>
         private double _phi;
 
         public void Exceute()
