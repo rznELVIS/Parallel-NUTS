@@ -1,6 +1,7 @@
 ﻿namespace OneCPU
 {
     using System;
+    using System.Diagnostics;
 
     public class Manager
     {
@@ -26,13 +27,18 @@
 
         public void Exceute()
         {
+            var sw = new Stopwatch();
+            sw.Start();
+
             this._a = 11;
             this._m = 3;
             this._period = 2;
             this._phi = 2;
 
             // 128000000 max for double
-            int globalWorkSize = 128000000;
+            long globalWorkSize = 1024;
+            globalWorkSize *= 100000;
+            globalWorkSize *= 1000;
             //float[] resultK = new float[globalWorkSize];
             //float[] resultP = new float[globalWorkSize];
 
@@ -41,6 +47,9 @@
                 var valueK = this.GetKinectickValue(i);
                 var valueP = this.GetPotentialValue(i);
             }
+
+            sw.Stop();
+            Console.WriteLine($"Compute time: {sw.Elapsed.TotalSeconds} sec.");
         }
 
         /// <summary>
@@ -50,6 +59,8 @@
         /// <returns></returns>
         private float GetKinectickValue(double t)
         {
+            t /= 1000000;
+
             var res = 2 * Math.PI * Math.PI;
             res = res * this._a * this._a;
             res = res / (this._period * this._period);
@@ -67,6 +78,8 @@
 
         private double GetPotentialValue(double t)
         {
+            t /= 1000000;
+
             var res = 2 * Math.PI * Math.PI;
             res = res * this._a * this._a;
             res = res / (this._period * this._period);

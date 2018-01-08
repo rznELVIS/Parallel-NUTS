@@ -53,8 +53,10 @@
                                 Console.WriteLine($"Infrastructure time: {sw.Elapsed.TotalSeconds} sec.");
 
                                 sw.Restart();
-                                for (int i = 0; i < 100; i++)
+                                for (int i = 0; i < 1000; i++)
                                 {
+                                    Console.WriteLine($"Iteration: {i}");
+
                                     kernel.Arguments[0].SetValue(bufferA);
                                     kernel.Arguments[1].SetValue(bufferCoeff);
 

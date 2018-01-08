@@ -1,8 +1,8 @@
-﻿__kernel void Calculate(__global float* a, __constant float* coeff)
+﻿__kernel void Calculate(__global float* source, __constant float* coeff)
 {
 	int iGID = get_global_id(0);
+	float time = (float)iGID / 10000000;
 
-	//kitetic
 	float resK = 2 *  M_PI * M_PI;
 	resK = resK * coeff[0] * coeff[0];
 	resK = resK / (coeff[2] * coeff[2]);
@@ -15,7 +15,6 @@
 
 	resK = resK * cos(value) * cos(value);
 
-	//potential
 	float resP = 2 *  M_PI * M_PI;
 	resP = resP * coeff[0] * coeff[0];
 	resP = resP / (coeff[2] * coeff[2]);
@@ -28,5 +27,5 @@
 
 	resP = resP * sin(value) * sin(value);
 
-	a[iGID] = resK;
+	source[iGID] = resK + resP;
 }
